@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Task_1;
+using Task_2;
 
 namespace Tests
 {
@@ -117,6 +118,16 @@ namespace Tests
         {
             string testInput = "1a1a4";
             Assert.Throws<FormatException>(() => Task_1.Encoding.Decode(testInput));
+        }
+    }
+
+    [TestClass]
+    public class ServerTests
+    {
+        [TestMethod]
+        public void Server_BruteForceTest()
+        {
+
         }
     }
 }
