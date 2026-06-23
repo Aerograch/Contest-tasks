@@ -124,10 +124,54 @@ namespace Tests
     [TestClass]
     public class ServerTests
     {
+        private static SemaphoreSlim semaphore;
+        private static DateTime startTime;
         [TestMethod]
         public void Server_BruteForceTest()
         {
+            startTime = DateTime.Now;
+            semaphore = new SemaphoreSlim(0);
+            int readerCounter = 0;
+            int writerCounter = 0;
+            Random rand = new Random();
 
+            for (int i = 0; i < 100; i++)
+            {
+                if (rand.Next(0, 2) == 1)
+                {
+                    readerCounter++;
+                    Thread t = new Thread(new ParameterizedThreadStart(Reader));
+                    t.Start(readerCounter);
+                }
+                else
+                {
+                    writerCounter++;
+                    Thread t = new Thread(new ParameterizedThreadStart(Writer));
+                    t.Start(writerCounter);
+                }
+            }
+
+            Thread.Sleep(500);
+            semaphore.Release(100);
+
+            Thread.Sleep(200);
+            Assert.AreEqual(writerCounter, Server.GetCount());
+        }
+
+        private static void Reader(object id)
+        {
+            semaphore.Wait();
+            int count = Server.GetCount();
+            TimeSpan currentTime = DateTime.Now - startTime;
+            Console.WriteLine("[{0}.{1}] Reader {2} read number, current count: {3}", currentTime.Seconds, currentTime.Milliseconds, id, count);
+        }
+
+        private static void Writer(object id)
+        {
+            semaphore.Wait();
+            Server.AddToCount(1);
+            TimeSpan currentTime = DateTime.Now - startTime;
+            Console.WriteLine("[{0}.{1}] Writer {2} added 1 to number", currentTime.Seconds, currentTime.Milliseconds, id);
         }
     }
 }
