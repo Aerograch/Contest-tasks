@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using Task_1;
 using Task_2;
+using Task_3;
 
 namespace Tests
 {
