@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using Microsoft.VisualStudio.TestPlatform.TestHost;
+using System.Text;
 using Task_1;
 using Task_2;
 using Task_3;
@@ -173,6 +174,71 @@ namespace Tests
             Server.AddToCount(1);
             TimeSpan currentTime = DateTime.Now - startTime;
             Console.WriteLine("[{0}.{1}] Writer {2} added 1 to number", currentTime.Seconds, currentTime.Milliseconds, id);
+        }
+    }
+
+    [TestClass]
+    public class StandartizationTests
+    {
+        private static string inputPath;
+        private static string outputPath;
+        private static string errorPath;
+
+        [TestMethod]
+        [DoNotParallelize]
+        public void WriteLog_SimpleTest()
+        {
+            PrepareEmptyFiles();
+
+            File.WriteAllLines(inputPath, new string[]{ "10.03.2025 15:14:49.523 INFORMATION Версия программы: '3.4.0.48729'", 
+                 "2025-03-10 15:14:51.5882| INFO|11|MobileComputer.GetDeviceId| Код устройства: '@MINDEO-M40-D-410244015546'" });
+
+            Task_3.Program.Standartization.WriteLog(inputPath, outputPath, errorPath);
+
+            string expectedStdOutput = "10-03-2025\t15:14:49.523\tINFO\tDEFAULT\tВерсия программы: '3.4.0.48729'\r\n" +
+                "10-03-2025\t15:14:51.5882\tINFO\tMobileComputer.GetDeviceId\tКод устройства: '@MINDEO-M40-D-410244015546'\r\n";
+            string actualStdOutput = File.ReadAllText(outputPath);
+
+            string expectedErrOutput = "";
+            string actualErrOutput = File.ReadAllText(errorPath);
+
+            Assert.AreEqual(expectedStdOutput, actualStdOutput);
+            Assert.AreEqual(expectedErrOutput, actualErrOutput);
+        }
+
+        [TestMethod]
+        [DoNotParallelize]
+        public void WriteLog_ErrorTest()
+        {
+            PrepareEmptyFiles();
+
+            File.WriteAllLines(inputPath, new string[]{ "10.03.2025 15:14:49.523 INFOR231ATION Версия программы: '3.4.0.48729'",
+                 "2025-03-10 15:14:51.5882| INFO|11|MobileComputer.GetDeviceId| Код устройства: '@MINDEO-M40-D-410244015546'" });
+
+            Task_3.Program.Standartization.WriteLog(inputPath, outputPath, errorPath);
+
+            string expectedStdOutput = "10-03-2025\t15:14:51.5882\tINFO\tMobileComputer.GetDeviceId\tКод устройства: '@MINDEO-M40-D-410244015546'\r\n";
+            string actualStdOutput = File.ReadAllText(outputPath);
+
+            string expectedErrOutput = "10.03.2025 15:14:49.523 INFOR231ATION Версия программы: '3.4.0.48729'\r\n";
+            string actualErrOutput = File.ReadAllText(errorPath);
+
+            Assert.AreEqual(expectedStdOutput, actualStdOutput);
+            Assert.AreEqual(expectedErrOutput, actualErrOutput);
+        }
+
+        private static void PrepareEmptyFiles()
+        {
+            Directory.CreateDirectory(Path.GetFullPath("StandartizationTests"));
+
+            File.Create(Path.GetFullPath("StandartizationTests\\input.txt")).Dispose();
+            inputPath = Path.GetFullPath("StandartizationTests\\input.txt");
+
+            File.Create(Path.GetFullPath("StandartizationTests\\output.txt")).Dispose();
+            outputPath = Path.GetFullPath("StandartizationTests\\output.txt");
+
+            File.Create(Path.GetFullPath("StandartizationTests\\error.txt")).Dispose();
+            errorPath = Path.GetFullPath("StandartizationTests\\error.txt");
         }
     }
 }
