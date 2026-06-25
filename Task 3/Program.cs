@@ -1,4 +1,7 @@
 ﻿using System.Text.RegularExpressions;
+using System.CommandLine;
+using System.CommandLine.Parsing;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Task_3
 {
@@ -17,23 +20,60 @@ namespace Task_3
 
         static void Main(string[] args)
         {
-            
+            Option<bool> dontCreateNewOption = new("--dont-create-new")
+            {
+                Description = "Does not create new file if file does not exist"
+            };
+            Option<bool> appendDataOption = new("--append")
+            {
+                Description = "Appends data instead of overwriting file"
+            };
+            Option<FileInfo> inputFileOption = new("--input-file")
+            {
+                Description = "Path to input file"
+            };
+            Option<DirectoryInfo> outputDirectoryOption = new("--output-directory");
+
+            RootCommand rootCommand = new RootCommand("Console app for standartizing logs")
+            {
+                dontCreateNewOption,
+                appendDataOption,
+                inputFileOption,
+                outputDirectoryOption
+            };
+
+            ParseResult parseResult = rootCommand.Parse(args);
+
+            if (parseResult.GetValue(dontCreateNewOption))
+            {
+                if (!parseResult.GetValue(inputFileOption).Exists || !parseResult.GetValue(outputDirectoryOption).Exists)
+                {
+                    Console.WriteLine("File or directory does not exist!");
+                    return;
+                }
+            }
+
+            string outputFilePath = Path.Combine(parseResult.GetValue(outputDirectoryOption).FullName, "\\logs.txt");
+            string errorFilePath = Path.Combine(parseResult.GetValue(outputDirectoryOption).FullName, "\\problems.txt");
+
+            Standartization.WriteLog(
+                parseResult.GetValue(inputFileOption).FullName,
+                outputFilePath,
+                errorFilePath,
+                !parseResult.GetValue(appendDataOption));
+                
         }
 
 
         public static class Standartization
         {
             /// <summary>
-            /// Reads logs from imput file and writes them to output file in unified format if able, else writes them to error file
+            /// Reads logs from input file and writes them to output file in unified format if able, else writes them to error file
             /// </summary>
-            /// <returns>False if input file does not exist, or output file does not exist and createNew == false</returns>
-            public static bool WriteLog(string inputPath, string outputPath, string errorPath, bool createNew = false)
+            public static void WriteLog(string inputPath, string outputPath, string errorPath, bool overwrite = false)
             {
                 string firstFormatPattern = "^[0-3][0-9]\\.[0-1][0-9]\\.[0-9]{4} [0-2][0-9]:[0-6][0-9]:[0-6][0-9]\\.[0-9]{1,4} ((INFORMATION)|(WARNING)|(ERROR)|(DEBUG)) .+$";
                 string secondFormatPattern = "^[0-9]{4}-[0-1][0-9]-[0-3][0-9] [0-2][0-9]:[0-6][0-9]:[0-6][0-9].[0-9]{1,4}\\| ((INFO)|(WARN)|(ERROR)|(DEBUG))\\|[^|]*\\|[^|]+\\| .+$";
-
-                if (!File.Exists(inputPath) || ((!File.Exists(outputPath) || !File.Exists(errorPath) && !createNew))) 
-                    return false;
 
                 string[] inputLogs = File.ReadAllLines(inputPath);
                 List<string> stdOutput = new List<string>();
@@ -98,7 +138,8 @@ namespace Task_3
                     stdOutput.Add(data["date"] + '\t' + data["time"] + '\t' + data["logLevel"] + '\t' + data["method"] + '\t' + data["message"]);
                 }
 
-                if (createNew)
+
+                if (overwrite)
                 {
                     File.WriteAllLines(outputPath, stdOutput);
                     File.WriteAllLines(errorPath, errOutput);
@@ -108,7 +149,6 @@ namespace Task_3
                     File.AppendAllLines(outputPath, stdOutput);
                     File.AppendAllLines(errorPath, errOutput);
                 }
-                return true;
             }
         }
     }

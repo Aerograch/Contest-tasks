@@ -11,4 +11,8 @@
   <PropertyGroup>
     <AssemblyName>Task_3</AssemblyName>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" Version="2.0.9" />
+  </ItemGroup>
 </Project>
