@@ -1,0 +1,1 @@
+10-03-2025	15:14:51.5882	INFO	MobileComputer.GetDeviceId	Код устройства: '@MINDEO-M40-D-410244015546'

@@ -20,6 +20,7 @@ namespace Task_3
 
         static void Main(string[] args)
         {
+            // Create CLI arguments and parse values
             Option<bool> dontCreateNewOption = new("--dont-create-new")
             {
                 Description = "Does not create new file if file does not exist"
@@ -44,6 +45,8 @@ namespace Task_3
 
             ParseResult parseResult = rootCommand.Parse(args);
 
+            // Check if user does not want to create files yet file does not exist
+
             if (parseResult.GetValue(dontCreateNewOption))
             {
                 if (!parseResult.GetValue(inputFileOption).Exists || !parseResult.GetValue(outputDirectoryOption).Exists)
@@ -53,8 +56,10 @@ namespace Task_3
                 }
             }
 
-            string outputFilePath = Path.Combine(parseResult.GetValue(outputDirectoryOption).FullName, "\\logs.txt");
-            string errorFilePath = Path.Combine(parseResult.GetValue(outputDirectoryOption).FullName, "\\problems.txt");
+            // Convert logs
+
+            string outputFilePath = Path.Combine(parseResult.GetValue(outputDirectoryOption).FullName, "logs.txt");
+            string errorFilePath = Path.Combine(parseResult.GetValue(outputDirectoryOption).FullName, "problems.txt");
 
             Standartization.WriteLog(
                 parseResult.GetValue(inputFileOption).FullName,

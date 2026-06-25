@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Task 3": {
+      "commandName": "Project",
+      "commandLineArgs": "--input-file \"C:\\Users\\Иван\\source\\repos\\Contest tasks\\123\\Input.txt\" --output-directory \"C:\\Users\\Иван\\source\\repos\\Contest tasks\\123\""
+    }
+  }
+}
